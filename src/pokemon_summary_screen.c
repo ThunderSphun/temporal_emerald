@@ -1941,7 +1941,7 @@ static void ChangeSummaryPokemon(u8 taskId, s8 delta)
         monId = AdvanceMonIndex(delta);
     }
 
-    if (monId == -1)
+    if (monId == -1 || monId == sMonSummaryScreen->curMonIndex)
         return;
     
     PlaySE(SE_SELECT);
@@ -2047,21 +2047,21 @@ static void Task_ChangeSummaryMon(u8 taskId)
 
 static s8 AdvanceMonIndex(s8 delta)
 {
-    struct Pokemon *mon = sMonSummaryScreen->monList.mons;
-
+    s8 index = sMonSummaryScreen->curMonIndex;
+    
     if (sMonSummaryScreen->currPageIndex == PSS_PAGE_INFO)
     {
-        if (delta == -1 && sMonSummaryScreen->curMonIndex == 0)
+        if (delta == -1 && index == 0)
             return sMonSummaryScreen->maxMonIndex;
 
-        if (delta == 1 && sMonSummaryScreen->curMonIndex >= sMonSummaryScreen->maxMonIndex)
+        if (delta == 1 && index >= sMonSummaryScreen->maxMonIndex)
             return 0;
         
-            return sMonSummaryScreen->curMonIndex + delta;
+        return index + delta;
     }
     else
     {
-        s8 index = sMonSummaryScreen->curMonIndex;
+        struct Pokemon *mon = sMonSummaryScreen->monList.mons;
 
         do
         {
