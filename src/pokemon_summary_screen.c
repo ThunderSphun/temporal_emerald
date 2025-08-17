@@ -1911,50 +1911,50 @@ static void ChangeSummaryPokemon(u8 taskId, s8 delta)
 {
     s8 monId;
 
-    if (!sMonSummaryScreen->lockMonFlag)
+    if (sMonSummaryScreen->lockMonFlag)
+        return;
+
+    if (sMonSummaryScreen->isBoxMon == TRUE)
     {
-        if (sMonSummaryScreen->isBoxMon == TRUE)
+        if (sMonSummaryScreen->currPageIndex != PSS_PAGE_INFO)
         {
-            if (sMonSummaryScreen->currPageIndex != PSS_PAGE_INFO)
-            {
-                if (delta == 1)
-                    delta = 0;
-                else
-                    delta = 2;
-            }
+            if (delta == 1)
+                delta = 0;
             else
-            {
-                if (delta == 1)
-                    delta = 1;
-                else
-                    delta = 3;
-            }
-            monId = AdvanceStorageMonIndex(sMonSummaryScreen->monList.boxMons, sMonSummaryScreen->curMonIndex, sMonSummaryScreen->maxMonIndex, delta);
-        }
-        else if (IsMultiBattle() == TRUE)
-        {
-            monId = AdvanceMultiBattleMonIndex(delta);
+                delta = 2;
         }
         else
         {
-            monId = AdvanceMonIndex(delta);
+            if (delta == 1)
+                delta = 1;
+            else
+                delta = 3;
         }
-
-        if (monId != -1)
-        {
-            PlaySE(SE_SELECT);
-            if (sMonSummaryScreen->summary.ailment != AILMENT_NONE)
-            {
-                SetSpriteInvisibility(SPRITE_ARR_ID_STATUS, TRUE);
-                ClearWindowTilemap(PSS_LABEL_WINDOW_POKEMON_SKILLS_STATUS);
-                ScheduleBgCopyTilemapToVram(0);
-                HandleStatusTilemap(0, 2);
-            }
-            sMonSummaryScreen->curMonIndex = monId;
-            gTasks[taskId].data[0] = 0;
-            gTasks[taskId].func = Task_ChangeSummaryMon;
-        }
+        monId = AdvanceStorageMonIndex(sMonSummaryScreen->monList.boxMons, sMonSummaryScreen->curMonIndex, sMonSummaryScreen->maxMonIndex, delta);
     }
+    else if (IsMultiBattle() == TRUE)
+    {
+        monId = AdvanceMultiBattleMonIndex(delta);
+    }
+    else
+    {
+        monId = AdvanceMonIndex(delta);
+    }
+
+    if (monId == -1)
+        return;
+    
+    PlaySE(SE_SELECT);
+    if (sMonSummaryScreen->summary.ailment != AILMENT_NONE)
+    {
+        SetSpriteInvisibility(SPRITE_ARR_ID_STATUS, TRUE);
+        ClearWindowTilemap(PSS_LABEL_WINDOW_POKEMON_SKILLS_STATUS);
+        ScheduleBgCopyTilemapToVram(0);
+        HandleStatusTilemap(0, 2);
+    }
+    sMonSummaryScreen->curMonIndex = monId;
+    gTasks[taskId].data[0] = 0;
+    gTasks[taskId].func = Task_ChangeSummaryMon;
 }
 
 static void Task_ChangeSummaryMon(u8 taskId)
@@ -2052,10 +2052,11 @@ static s8 AdvanceMonIndex(s8 delta)
     if (sMonSummaryScreen->currPageIndex == PSS_PAGE_INFO)
     {
         if (delta == -1 && sMonSummaryScreen->curMonIndex == 0)
-            return -1;
-        else if (delta == 1 && sMonSummaryScreen->curMonIndex >= sMonSummaryScreen->maxMonIndex)
-            return -1;
-        else
+            return sMonSummaryScreen->maxMonIndex;
+
+        if (delta == 1 && sMonSummaryScreen->curMonIndex >= sMonSummaryScreen->maxMonIndex)
+            return 0;
+        
             return sMonSummaryScreen->curMonIndex + delta;
     }
     else
@@ -2065,9 +2066,22 @@ static s8 AdvanceMonIndex(s8 delta)
         do
         {
             index += delta;
-            if (index < 0 || index > sMonSummaryScreen->maxMonIndex)
-                return -1;
+            if (index < 0)
+            {
+                index = sMonSummaryScreen->maxMonIndex;
+                break;
+            }
+            else if (index > sMonSummaryScreen->maxMonIndex)
+            {
+                index = 0;
+                break;
+            }
+
         } while (GetMonData(&mon[index], MON_DATA_IS_EGG));
+
+        if (GetMonData(&mon[index], MON_DATA_IS_EGG))
+            return -1;
+
         return index;
     }
 }
@@ -3831,12 +3845,12 @@ static void BufferStat(u8 *dst, u8 statIndex, u32 stat, u32 strId, u32 stringLen
 
     if (statIndex == STAT_HP || !SUMMARY_SCREEN_NATURE_COLORS || gNaturesInfo[sMonSummaryScreen->summary.mintNature].statUp == gNaturesInfo[sMonSummaryScreen->summary.mintNature].statDown)
         txtPtr = StringCopy(dst, sTextNatureNeutral);
-    else if (statIndex == gNaturesInfo[sMonSummaryScreen->summary.mintNature].statUp)
-        txtPtr = StringCopy(dst, sTextNatureUp);
-    else if (statIndex == gNaturesInfo[sMonSummaryScreen->summary.mintNature].statDown)
-        txtPtr = StringCopy(dst, sTextNatureDown);
-    else
-        txtPtr = StringCopy(dst, sTextNatureNeutral);
+        else if (statIndex == gNaturesInfo[sMonSummaryScreen->summary.mintNature].statUp)
+            txtPtr = StringCopy(dst, sTextNatureUp);
+        else if (statIndex == gNaturesInfo[sMonSummaryScreen->summary.mintNature].statDown)
+            txtPtr = StringCopy(dst, sTextNatureDown);
+        else
+            txtPtr = StringCopy(dst, sTextNatureNeutral);
 
     if (!P_SUMMARY_SCREEN_IV_EV_VALUES
         && sMonSummaryScreen->skillsPageMode == SUMMARY_SKILLS_MODE_IVS)
