@@ -179,7 +179,8 @@ enum FlagsVarsDebugMenu
     DEBUG_FLAGVAR_MENU_ITEM_VARS,
     DEBUG_FLAGVAR_MENU_ITEM_DEXFLAGS_ALL,
     DEBUG_FLAGVAR_MENU_ITEM_DEXFLAGS_RESET,
-    DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_POKEDEX,
+    DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_REGDEX,
+    DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_EXTDEX,
     DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_NATDEX,
     DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_POKENAV,
     DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_MATCH_CALL,
@@ -445,7 +446,8 @@ static void DebugAction_FlagsVars_Select(u8 taskId);
 static void DebugAction_FlagsVars_SetValue(u8 taskId);
 static void DebugAction_FlagsVars_PokedexFlags_All(u8 taskId);
 static void DebugAction_FlagsVars_PokedexFlags_Reset(u8 taskId);
-static void DebugAction_FlagsVars_SwitchDex(u8 taskId);
+static void DebugAction_FlagsVars_SwitchRegDex(u8 taskId);
+static void DebugAction_FlagsVars_SwitchExtDex(u8 taskId);
 static void DebugAction_FlagsVars_SwitchNatDex(u8 taskId);
 static void DebugAction_FlagsVars_SwitchPokeNav(u8 taskId);
 static void DebugAction_FlagsVars_SwitchMatchCall(u8 taskId);
@@ -735,7 +737,8 @@ static const struct ListMenuItem sDebugMenu_Items_FlagsVars[] =
     [DEBUG_FLAGVAR_MENU_ITEM_VARS]                 = {COMPOUND_STRING("Set Var XYZ…{CLEAR_TO 110}{RIGHT_ARROW}"),  DEBUG_FLAGVAR_MENU_ITEM_VARS},
     [DEBUG_FLAGVAR_MENU_ITEM_DEXFLAGS_ALL]         = {COMPOUND_STRING("Pokédex Flags All"),                        DEBUG_FLAGVAR_MENU_ITEM_DEXFLAGS_ALL},
     [DEBUG_FLAGVAR_MENU_ITEM_DEXFLAGS_RESET]       = {COMPOUND_STRING("Pokédex Flags Reset"),                      DEBUG_FLAGVAR_MENU_ITEM_DEXFLAGS_RESET},
-    [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_POKEDEX]       = {COMPOUND_STRING("Toggle {STR_VAR_1}Pokédex"),                DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_POKEDEX},
+    [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_REGDEX]        = {COMPOUND_STRING("Toggle {STR_VAR_1}Regional Dex"),           DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_REGDEX},
+    [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_EXTDEX]        = {COMPOUND_STRING("Toggle {STR_VAR_1}Extended Dex"),           DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_EXTDEX},
     [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_NATDEX]        = {COMPOUND_STRING("Toggle {STR_VAR_1}National Dex"),           DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_NATDEX},
     [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_POKENAV]       = {COMPOUND_STRING("Toggle {STR_VAR_1}PokéNav"),                DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_POKENAV},
     [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_MATCH_CALL]    = {COMPOUND_STRING("Toggle {STR_VAR_1}Match Call"),             DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_MATCH_CALL},
@@ -917,7 +920,8 @@ static void (*const sDebugMenu_Actions_Flags[])(u8) =
     [DEBUG_FLAGVAR_MENU_ITEM_VARS]                 = DebugAction_FlagsVars_Vars,
     [DEBUG_FLAGVAR_MENU_ITEM_DEXFLAGS_ALL]         = DebugAction_FlagsVars_PokedexFlags_All,
     [DEBUG_FLAGVAR_MENU_ITEM_DEXFLAGS_RESET]       = DebugAction_FlagsVars_PokedexFlags_Reset,
-    [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_POKEDEX]       = DebugAction_FlagsVars_SwitchDex,
+    [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_REGDEX]        = DebugAction_FlagsVars_SwitchRegDex,
+    [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_EXTDEX]        = DebugAction_FlagsVars_SwitchExtDex,
     [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_NATDEX]        = DebugAction_FlagsVars_SwitchNatDex,
     [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_POKENAV]       = DebugAction_FlagsVars_SwitchPokeNav,
     [DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_MATCH_CALL]    = DebugAction_FlagsVars_SwitchMatchCall,
@@ -1357,8 +1361,11 @@ static u8 Debug_CheckToggleFlags(u8 id)
 
     switch (id)
     {
-        case DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_POKEDEX:
+        case DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_REGDEX:
             result = FlagGet(FLAG_SYS_POKEDEX_GET);
+            break;
+        case DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_EXTDEX:
+            result = IsExtendedPokedexEnabled();
             break;
         case DEBUG_FLAGVAR_MENU_ITEM_TOGGLE_NATDEX:
             result = IsNationalPokedexEnabled();
@@ -2741,13 +2748,36 @@ static void DebugAction_FlagsVars_PokedexFlags_Reset(u8 taskId)
     ScriptContext_Enable();
 }
 
-static void DebugAction_FlagsVars_SwitchDex(u8 taskId)
+static void DebugAction_FlagsVars_SwitchRegDex(u8 taskId)
 {
     if (FlagGet(FLAG_SYS_POKEDEX_GET))
+    {
+        FlagClear(FLAG_SYS_POKEDEX_GET);
+        DisableExtendedPokedex();
+        DisableNationalPokedex();
         PlaySE(SE_PC_OFF);
+    }
     else
+    {
+        FlagSet(FLAG_SYS_POKEDEX_GET);
         PlaySE(SE_PC_LOGIN);
-    FlagToggle(FLAG_SYS_POKEDEX_GET);
+    }
+}
+
+static void DebugAction_FlagsVars_SwitchExtDex(u8 taskId)
+{
+    if (IsExtendedPokedexEnabled())
+    {
+        DisableExtendedPokedex();
+        DisableNationalPokedex();
+        PlaySE(SE_PC_OFF);
+    }
+    else
+    {
+        FlagSet(FLAG_SYS_POKEDEX_GET);
+        EnableExtendedPokedex();
+        PlaySE(SE_PC_LOGIN);
+    }
 }
 
 static void DebugAction_FlagsVars_SwitchNatDex(u8 taskId)
@@ -2759,6 +2789,8 @@ static void DebugAction_FlagsVars_SwitchNatDex(u8 taskId)
     }
     else
     {
+        FlagSet(FLAG_SYS_POKEDEX_GET);
+        EnableExtendedPokedex();
         EnableNationalPokedex();
         PlaySE(SE_PC_LOGIN);
     }

@@ -409,7 +409,7 @@ enum {
 Edit [src/pokemon.c](https://github.com/rh-hideout/pokeemerald-expansion/blob/master/src/pokemon.c):
 
 ```diff
- const u16 sHoennToNationalOrder[NUM_SPECIES] = // Assigns Hoenn Dex Pokémon (Using National Dex Index)
+ const u16 sRegionalToNationalOrder[NUM_SPECIES] = // Assigns Hoenn Dex Pokémon (Using National Dex Index)
  {
      REGIONAL_TO_NATIONAL(TREECKO),
      ...

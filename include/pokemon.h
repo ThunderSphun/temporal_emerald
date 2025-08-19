@@ -744,10 +744,12 @@ bool32 DoesMonMeetAdditionalConditions(struct Pokemon *mon, const struct Evoluti
 u32 GetEvolutionTargetSpecies(struct Pokemon *mon, enum EvolutionMode mode, u16 evolutionItem, struct Pokemon *tradePartner, bool32 *canStopEvo, enum EvoState evoState);
 bool8 IsMonPastEvolutionLevel(struct Pokemon *mon);
 u16 NationalPokedexNumToSpecies(u16 nationalNum);
-u16 NationalToHoennOrder(u16 nationalNum);
+u16 NationalToRegionalOrder(u16 nationalNum);
+u16 NationalToExtendedOrder(u16 nationalNum);
 u16 SpeciesToNationalPokedexNum(u16 species);
 u16 SpeciesToHoennPokedexNum(u16 species);
-u16 HoennToNationalOrder(u16 hoennNum);
+u16 RegionalToNationalOrder(u16 regionalNum);
+u16 ExtendedToNationalOrder(u16 extendedNum);
 void DrawSpindaSpots(u32 personality, u8 *dest, bool32 isSecondFrame);
 void EvolutionRenameMon(struct Pokemon *mon, u16 oldSpecies, u16 newSpecies);
 u8 GetPlayerFlankId(void);
