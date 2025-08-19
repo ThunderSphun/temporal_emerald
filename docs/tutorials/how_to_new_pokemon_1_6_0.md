@@ -463,10 +463,10 @@ Just like before, if we want to insert our new species in the Hoenn Dex, we'll h
 ```diff
  const u16 gHoennToNationalOrder[NUM_SPECIES] = // Assigns Hoenn Dex Pokémon (Using National Dex Index)
  {
-     HOENN_TO_NATIONAL(TREECKO),
+     REGIONAL_TO_NATIONAL(TREECKO),
      ...
-     HOENN_TO_NATIONAL(DEOXYS),
-+    HOENN_TO_NATIONAL(MEWTHREE),
+     REGIONAL_TO_NATIONAL(DEOXYS),
++    REGIONAL_TO_NATIONAL(MEWTHREE),
  };
 ```
 
