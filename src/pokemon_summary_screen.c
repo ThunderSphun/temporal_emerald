@@ -3843,7 +3843,7 @@ static void BufferStat(u8 *dst, u8 statIndex, u32 stat, u32 strId, u32 stringLen
     static const u8 sTextNatureNeutral[] = _("{COLOR}{WHITE}");
     u8 *txtPtr;
 
-    if (statIndex == STAT_HP || !SUMMARY_SCREEN_NATURE_COLORS || gNaturesInfo[sMonSummaryScreen->summary.mintNature].statUp == gNaturesInfo[sMonSummaryScreen->summary.mintNature].statDown)
+    if (statIndex == STAT_HP || !P_SUMMARY_SCREEN_NATURE_COLORS || gNaturesInfo[sMonSummaryScreen->summary.mintNature].statUp == gNaturesInfo[sMonSummaryScreen->summary.mintNature].statDown)
         txtPtr = StringCopy(dst, sTextNatureNeutral);
         else if (statIndex == gNaturesInfo[sMonSummaryScreen->summary.mintNature].statUp)
             txtPtr = StringCopy(dst, sTextNatureUp);
