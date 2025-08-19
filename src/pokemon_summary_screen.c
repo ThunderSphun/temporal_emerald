@@ -3259,7 +3259,7 @@ static void PrintStatLabel(u8 windowId, const u8 *string, u8 x, u8 y, u8 statInd
 }
 
 static void PrintStatLabels(void) {
-    if (SUMMARY_SCREEN_NATURE_COLORS) {
+    if (P_SUMMARY_SCREEN_NATURE_COLORS) {
         PrintStatLabel(PSS_LABEL_WINDOW_POKEMON_SKILLS_STATS_LEFT, gText_HP4, 6, 1, STAT_HP);
         PrintStatLabel(PSS_LABEL_WINDOW_POKEMON_SKILLS_STATS_LEFT, gText_Attack4, 6, 17, STAT_ATK);
         PrintStatLabel(PSS_LABEL_WINDOW_POKEMON_SKILLS_STATS_LEFT, gText_Defense4, 6, 33, STAT_DEF);
