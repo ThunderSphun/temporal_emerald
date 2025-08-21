@@ -1654,8 +1654,8 @@ void CB2_OpenPokedex(void)
         sPokedexView->selectedScreen = AREA_SCREEN;
         if (!IsNationalPokedexEnabled())
         {
-            sPokedexView->seenCount = GetHoennPokedexCount(FLAG_GET_SEEN);
-            sPokedexView->ownCount = GetHoennPokedexCount(FLAG_GET_CAUGHT);
+            sPokedexView->seenCount = GetRegionalPokedexCount(FLAG_GET_SEEN);
+            sPokedexView->ownCount = GetRegionalPokedexCount(FLAG_GET_CAUGHT);
         }
         else
         {
@@ -2944,7 +2944,7 @@ static void CreateInterfaceSprites(u8 page)
             StartSpriteAnim(&gSprites[spriteId], 1);
 
             // Hoenn seen value - 100s
-            seenOwnedCount = GetHoennPokedexCount(FLAG_GET_SEEN);
+            seenOwnedCount = GetRegionalPokedexCount(FLAG_GET_SEEN);
             drawNextDigit = FALSE;
             spriteId = CreateSprite(&sNationalDexSeenOwnNumberSpriteTemplate, counterX100s, 45, 1);
             digitNum = seenOwnedCount / 100;
@@ -3001,7 +3001,7 @@ static void CreateInterfaceSprites(u8 page)
             digitNum = ((sPokedexView->seenCount % 1000) % 100) % 10;
             StartSpriteAnim(&gSprites[spriteId], digitNum);
 
-            seenOwnedCount = GetHoennPokedexCount(FLAG_GET_CAUGHT);
+            seenOwnedCount = GetRegionalPokedexCount(FLAG_GET_CAUGHT);
 
             // Hoenn owned value - 100s
             drawNextDigit = FALSE;
@@ -4564,66 +4564,33 @@ s8 GetSetPokedexFlag(u16 nationalDexNo, u8 caseID)
 u16 GetNationalPokedexCount(u8 caseID)
 {
     u16 count = 0;
-    u16 i;
-
-    for (i = 0; i < NATIONAL_DEX_COUNT; i++)
-    {
-        switch (caseID)
-        {
-        case FLAG_GET_SEEN:
-            if (GetSetPokedexFlag(i + 1, FLAG_GET_SEEN))
-                count++;
-            break;
-        case FLAG_GET_CAUGHT:
-            if (GetSetPokedexFlag(i + 1, FLAG_GET_CAUGHT))
-                count++;
-            break;
-        }
-    }
+    
+    for (u16 i = 0; i < NATIONAL_DEX_COUNT - 1; i++)
+        if (GetSetPokedexFlag(i + 1, caseID))
+            count++;
+       
     return count;
 }
 
-u16 GetHoennPokedexCount(u8 caseID)
+u16 GetRegionalPokedexCount(u8 caseID)
 {
     u16 count = 0;
-    u16 i;
 
-    for (i = 0; i < REGIONAL_DEX_COUNT - 1; i++)
-    {
-        switch (caseID)
-        {
-        case FLAG_GET_SEEN:
-            if (GetSetPokedexFlag(RegionalToNationalOrder(i + 1), FLAG_GET_SEEN))
-                count++;
-            break;
-        case FLAG_GET_CAUGHT:
-            if (GetSetPokedexFlag(RegionalToNationalOrder(i + 1), FLAG_GET_CAUGHT))
-                count++;
-            break;
-        }
-    }
+    for (u16 i = 0; i < REGIONAL_DEX_COUNT - 1; i++)
+        if (GetSetPokedexFlag(RegionalToNationalOrder(i + 1), caseID))
+            count++;
+
     return count;
 }
 
 u16 GetKantoPokedexCount(u8 caseID)
 {
     u16 count = 0;
-    u16 i;
 
-    for (i = 0; i < KANTO_DEX_COUNT; i++)
-    {
-        switch (caseID)
-        {
-        case FLAG_GET_SEEN:
-            if (GetSetPokedexFlag(i + 1, FLAG_GET_SEEN))
-                count++;
-            break;
-        case FLAG_GET_CAUGHT:
-            if (GetSetPokedexFlag(i + 1, FLAG_GET_CAUGHT))
-                count++;
-            break;
-        }
-    }
+    for (u16 i = 0; i < KANTO_DEX_COUNT - 1; i++)
+        if (GetSetPokedexFlag(i + 1, caseID))
+            count++;
+
     return count;
 }
 
@@ -4657,7 +4624,7 @@ bool16 HasAllMons(void)
 {
     u32 i, j;
 
-    for (i = 1; i < NATIONAL_DEX_COUNT + 1; i++)
+    for (i = 1; i < NATIONAL_DEX_COUNT; i++)
     {
         j = NationalPokedexNumToSpecies(i);
         if (!(gSpeciesInfo[j].isMythical && !gSpeciesInfo[j].dexForceRequired) && !GetSetPokedexFlag(j, FLAG_GET_CAUGHT))

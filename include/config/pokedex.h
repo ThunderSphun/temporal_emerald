@@ -6,7 +6,7 @@
 #define POKEDEX_PLUS_TEMPORAL              2
 #define POKEDEX_PLUS_VERSION               POKEDEX_PLUS_TEMPORAL
 
-#define DEX_DECAPPED                       FALSE // If TRUE, uses decapped gfx and strings.
+#define DEX_DECAPPED                       TRUE  // If TRUE, uses decapped gfx and strings.
 #define DEX_DARK_MODE                      TRUE  // If TRUE, enables dark mode.
 #define DEX_HIDE_UNSEEN_EVOLUTION_NAMES    TRUE  // If TRUE, hides evolution mon names.
 #define DEX_SORT_TMS_BY_NUM                FALSE // If TRUE, sorts the TMS in HGSS Dex by TM number, rather than alphabetically.

@@ -119,7 +119,7 @@ static const struct CombinedMove sCombinedMoves[2] =
 #define REGIONAL_TO_NATIONAL(name)     [REGIONAL_DEX_##name - 1] = NATIONAL_DEX_##name
 
 // Assigns all Hoenn Dex Indexes to a National Dex Index
-static const u16 sRegionalToNationalOrder[REGIONAL_DEX_COUNT - 1] =
+static const u16 sRegionalToNationalOrder[REGIONAL_DEX_COUNT] =
 {
     REGIONAL_TO_NATIONAL(TREECKO),
     REGIONAL_TO_NATIONAL(GROVYLE),
@@ -364,7 +364,7 @@ static const u16 sRegionalToNationalOrder[REGIONAL_DEX_COUNT - 1] =
 #define EXTENDED_TO_NATIONAL(name)     [EXTENDED_DEX_##name - 1] = NATIONAL_DEX_##name
 
 // Assigns all Extended Hoenn Dex Indexes to a National Dex Index
-static const u16 sExtendedToNationalOrder[EXTENDED_DEX_COUNT - 1] =
+static const u16 sExtendedToNationalOrder[EXTENDED_DEX_COUNT] =
 {
     EXTENDED_TO_NATIONAL(BULBASAUR),
     EXTENDED_TO_NATIONAL(IVYSAUR),
@@ -5652,7 +5652,7 @@ u16 NationalToRegionalOrder(u16 nationalNum)
     while (regionalNum < (REGIONAL_DEX_COUNT - 1) && sRegionalToNationalOrder[regionalNum] != nationalNum)
         regionalNum++;
 
-    if (regionalNum >= REGIONAL_DEX_COUNT - 1)
+    if (regionalNum > REGIONAL_DEX_COUNT)
         return 0;
 
     return regionalNum + 1;
