@@ -17,6 +17,7 @@
 #include "pokedex_area_screen.h"
 #include "pokedex_cry_screen.h"
 #include "pokedex_plus_hgss.h"
+#include "pokedex_plus_temporal.h"
 #include "rtc.h"
 #include "scanline_effect.h"
 #include "sound.h"
@@ -30,7 +31,7 @@
 #include "window.h"
 #include "constants/rgb.h"
 #include "constants/songs.h"
-#include "config/pokedex_plus_hgss.h"
+#include "config/pokedex.h"
 
 enum
 {
@@ -1608,9 +1609,14 @@ static void ResetPokedexView(struct PokedexView *pokedexView)
 
 void CB2_OpenPokedex(void)
 {
-    if (POKEDEX_PLUS_HGSS)
+    if (POKEDEX_PLUS_VERSION == POKEDEX_PLUS_HGSS)
     {
         CB2_OpenPokedexPlusHGSS();
+        return;
+    }
+    if (POKEDEX_PLUS_VERSION == POKEDEX_PLUS_TEMPORAL)
+    {
+        CB2_OpenPokedexPlusTemporal();
         return;
     }
 
@@ -4035,8 +4041,10 @@ static void HighlightSubmenuScreenSelectBarItem(u8 a, u16 b)
 u8 DisplayCaughtMonDexPage(u16 species, bool32 isShiny, u32 personality)
 {
     u8 taskId = 0;
-    if (POKEDEX_PLUS_HGSS)
+    if (POKEDEX_PLUS_VERSION == POKEDEX_PLUS_HGSS)
         taskId = CreateTask(Task_DisplayCaughtMonDexPageHGSS, 0);
+    else if (POKEDEX_PLUS_VERSION == POKEDEX_PLUS_TEMPORAL)
+        taskId = CreateTask(Task_DisplayCaughtMonDexPageTemporal, 0);
     else
         taskId = CreateTask(Task_DisplayCaughtMonDexPage, 0);
 
@@ -4253,7 +4261,7 @@ void PrintMonMeasurements(u16 species, u32 owned)
 
 static u32 GetMeasurementTextPositions(u32 textElement)
 {
-    if (!POKEDEX_PLUS_HGSS)
+    if (POKEDEX_PLUS_VERSION == POKEDEX_PLUS_NONE)
         return textElement;
 
     switch(textElement)
