@@ -178,7 +178,6 @@ static const u8 sText_Stats_FLUCTUATING[] = _("FLUCTUATING");
 static const u8 sText_Stats_MEDIUM_SLOW[] = _("MED. SLOW");
 static const u8 sText_Stats_FAST[] = _("FAST");
 static const u8 sText_Stats_SLOW[] = _("SLOW");
-static const u8 sText_Stats_ContestHeart[] = _("H");
 static const u8 sText_Stats_Minus[] = _("-");
 static const u8 sText_Stats_eggGroup[] = _("EGG G1:");
 static const u8 sText_Stats_eggGroup_Groups[] = _("{STR_VAR_1}/{STR_VAR_2}");
@@ -198,8 +197,6 @@ static const u8 sText_Stats_eggGroup_DITTO[] = _("DITTO");
 static const u8 sText_Stats_eggGroup_DRAGON[] = _("DRAGON");
 static const u8 sText_Stats_eggGroup_NO_EGGS_DISCOVERED[] = _("---");
 static const u8 sText_Stats_eggGroup_UNKNOWN[] = _("???");
-static const u8 sText_Dex_SEEN[] = _("SEEN");
-static const u8 sText_Dex_OWN[] = _("OWN");
 
 static const u8 sText_EVO_Buttons[] = _("{DPAD_UPDOWN}EVOs  {A_BUTTON}CHECK");
 static const u8 sText_EVO_Buttons_Decapped[] = _("{DPAD_UPDOWN}Evos  {A_BUTTON}Check");
@@ -208,19 +205,6 @@ static const u8 sText_EVO_Buttons_Decapped_PE[] = _("{DPAD_UPDOWN}Evos  {A_BUTTO
 static const u8 sText_EVO_Name[] = _("{STR_VAR_3}:");
 static const u8 sText_EVO_PreEvo[] = _("{STR_VAR_1} evolves from {STR_VAR_2}");
 static const u8 sText_EVO_PreEvo_PE_Mega[] = _("{STR_VAR_1} Mega Evolves with {STR_VAR_2}");
-static const u8 sText_EVO_LEVEL_SILCOON[] = _("{LV}{UP_ARROW} to {STR_VAR_2}, Silcoon persona");
-static const u8 sText_EVO_LEVEL_CASCOON[] = _("{LV}{UP_ARROW} to {STR_VAR_2}, Cascoon persona");
-static const u8 sText_EVO_MOVE[] = _("{LV}{UP_ARROW}, knows {STR_VAR_2}");
-static const u8 sText_EVO_LEVEL_RAIN[] = _("{LV}{UP_ARROW} to {STR_VAR_2} while raining");
-static const u8 sText_EVO_TRADE_SPECIFIC_MON[] = _("Traded for {STR_VAR_2}");
-static const u8 sText_EVO_CRITICAL_HITS[] = _("Land {STR_VAR_2} critical hits in\nsingle battle");
-static const u8 sText_EVO_SCRIPT_TRIGGER_DMG[] = _("Takes at least {STR_VAR_2} HP in damage");
-static const u8 sText_EVO_DARK_SCROLL[] = _("ScrllOfDrknss is used");
-static const u8 sText_EVO_WATER_SCROLL[] = _("ScrollOfWatrs is used");
-static const u8 sText_EVO_USE_MOVE_TWENTY_TIMES[] = _("{LV}{UP_ARROW} after 20x {STR_VAR_2}");
-static const u8 sText_EVO_RECOIL_DAMAGE_MALE[] = _("{LV}{UP_ARROW} with {STR_VAR_2} recoil, male");
-static const u8 sText_EVO_RECOIL_DAMAGE_FEMALE[] = _("{LV}{UP_ARROW} with {STR_VAR_2} recoil, female");
-static const u8 sText_EVO_DEFEAT_THREE_WITH_ITEM[] = _("{LV}{UP_ARROW} defeating 3 {STR_VAR_3} holding {STR_VAR_2}");
 static const u8 sText_EVO_NONE[] = _("{STR_VAR_1} has no evolution.");
 
 static const u8 sText_FORMS_Buttons_PE[] = _("{A_BUTTON}FORM MODE  {START_BUTTON}EVOs");
@@ -262,8 +246,7 @@ static const u32 sPokedexPlusTemporal_ScreenEvolution_Tilemap_PE[] = INCBIN_U32(
 static const u32 sPokedexPlusTemporal_ScreenForms_Tilemap[] = INCBIN_U32("graphics/pokedex/temporal/tilemap_forms_screen.bin.lz");
 static const u32 sPokedexPlusTemporal_ScreenCry_Tilemap[] = INCBIN_U32("graphics/pokedex/temporal/tilemap_cry_screen.bin.lz");
 static const u32 sPokedexPlusTemporal_ScreenSize_Tilemap[] = INCBIN_U32("graphics/pokedex/temporal/tilemap_size_screen.bin.lz");
-static const u32 sPokedexPlusTemporal_ScreenSearchRegional_Tilemap[] = INCBIN_U32("graphics/pokedex/temporal/tilemap_search_screen_regional.bin.lz");
-static const u32 sPokedexPlusTemporal_ScreenSearchNational_Tilemap[] = INCBIN_U32("graphics/pokedex/temporal/tilemap_search_screen_national.bin.lz");
+static const u32 sPokedexPlusTemporal_ScreenSearch_Tilemap[] = INCBIN_U32("graphics/pokedex/temporal/tilemap_search_screen.bin.lz");
 
 #define SCROLLING_MON_X 146
 
@@ -547,6 +530,8 @@ static void SetSpriteInvisibility(u8 spriteArrayId, bool8 invisible);
 static void CreateTypeIconSprites(void);
 static void SetSearchRectHighlight(u8 flags, u8 x, u8 y, u8 width);
 static void PrintInfoSubMenuText(u8 windowId, const u8 *str, u8 left, u8 top);
+
+u16 GetExtendedPokedexCount(u8 caseID);
 
 //Stats screen Temporal_Ui
 
@@ -1786,15 +1771,20 @@ void CB2_OpenPokedexPlusTemporal(void)
         sPokedexView->dexOrder = gSaveBlock2Ptr->pokedex.order;
         sPokedexView->selectedPokemon = sLastSelectedPokemon;
         sPokedexView->selectedScreen = AREA_SCREEN;
-        if (!IsNationalPokedexEnabled())
-        {
-            sPokedexView->seenCount = GetRegionalPokedexCount(FLAG_GET_SEEN);
-            sPokedexView->ownCount = GetRegionalPokedexCount(FLAG_GET_CAUGHT);
-        }
-        else
+        if (IsNationalPokedexEnabled())
         {
             sPokedexView->seenCount = GetNationalPokedexCount(FLAG_GET_SEEN);
             sPokedexView->ownCount = GetNationalPokedexCount(FLAG_GET_CAUGHT);
+        }
+        else if (IsExtendedPokedexEnabled())
+        {
+            sPokedexView->seenCount = GetExtendedPokedexCount(FLAG_GET_SEEN);
+            sPokedexView->ownCount = GetExtendedPokedexCount(FLAG_GET_CAUGHT);
+        }
+        else
+        {
+            sPokedexView->seenCount = GetRegionalPokedexCount(FLAG_GET_SEEN);
+            sPokedexView->ownCount = GetRegionalPokedexCount(FLAG_GET_CAUGHT);
         }
         sPokedexView->initialVOffset = 8;
         gMain.state++;
@@ -7542,10 +7532,7 @@ static void Task_LoadSearchMenu(u8 taskId)
                 DecompressAndLoadBgGfxUsingHeap(3, sPokedexPlusTemporal_MenuSearch_Gfx, 0x2000, 0, 0);
             else
                 DecompressAndLoadBgGfxUsingHeap(3, sPokedexPlusTemporal_MenuSearch_DECA_Gfx, 0x2000, 0, 0);
-            if (!IsNationalPokedexEnabled())
-                CopyToBgTilemapBuffer(3, sPokedexPlusTemporal_ScreenSearchRegional_Tilemap, 0, 0);
-            else
-                CopyToBgTilemapBuffer(3, sPokedexPlusTemporal_ScreenSearchNational_Tilemap, 0, 0);
+            CopyToBgTilemapBuffer(3, sPokedexPlusTemporal_ScreenSearch_Tilemap, 0, 0);
             if (!DEX_DARK_MODE)
                 LoadPalette(sPokedexPlusTemporal_MenuSearch_Pal + 1, BG_PLTT_ID(0) + 1, PLTT_SIZEOF(4 * 16 - 1));
             else
@@ -7822,17 +7809,17 @@ static void Task_SearchCompleteWaitForInput(u8 taskId)
 static void Task_SelectSearchMenuItem(u8 taskId)
 {
     u8 menuItem;
-    s16 *cursorPos;
-    s16 *scrollOffset;
+    s16 cursorPos;
+    s16 scrollOffset;
 
     DrawOrEraseSearchParameterBox(FALSE);
     menuItem = gTasks[taskId].tMenuItem;
-    cursorPos = &gTasks[taskId].data[sSearchOptions[menuItem].taskDataCursorPos];
-    scrollOffset = &gTasks[taskId].data[sSearchOptions[menuItem].taskDataScrollOffset];
-    gTasks[taskId].tCursorPos = *cursorPos;
-    gTasks[taskId].tScrollOffset = *scrollOffset;
+    cursorPos = gTasks[taskId].data[sSearchOptions[menuItem].taskDataCursorPos];
+    scrollOffset = gTasks[taskId].data[sSearchOptions[menuItem].taskDataScrollOffset];
+    gTasks[taskId].tCursorPos = cursorPos;
+    gTasks[taskId].tScrollOffset = scrollOffset;
     PrintSearchParameterText(taskId);
-    PrintSelectorArrow(*cursorPos);
+    PrintSelectorArrow(cursorPos);
     gTasks[taskId].func = Task_HandleSearchParameterInput;
     CopyWindowToVram(0, COPYWIN_GFX);
     CopyBgTilemapBufferToVram(3);
@@ -7852,7 +7839,16 @@ static void Task_HandleSearchParameterInput(u8 taskId)
     texts = sSearchOptions[menuItem].texts;
     cursorPos = &gTasks[taskId].data[sSearchOptions[menuItem].taskDataCursorPos];
     scrollOffset = &gTasks[taskId].data[sSearchOptions[menuItem].taskDataScrollOffset];
-    maxOption = sSearchOptions[menuItem].numOptions - 1;
+
+    if (menuItem != SEARCH_MODE)
+        maxOption = sSearchOptions[menuItem].numOptions - 1;
+    else if (IsNationalPokedexEnabled())
+        maxOption = sSearchOptions[menuItem].numOptions - 1;
+    else if (IsExtendedPokedexEnabled())
+        maxOption = sSearchOptions[menuItem].numOptions - 2;
+    else
+        maxOption = sSearchOptions[menuItem].numOptions - 3;
+
     if (JOY_NEW(A_BUTTON))
     {
         PlaySE(SE_PIN);
@@ -7875,6 +7871,7 @@ static void Task_HandleSearchParameterInput(u8 taskId)
         CopyBgTilemapBufferToVram(3);
         return;
     }
+
     moved = FALSE;
     if (JOY_REPEAT(DPAD_UP))
     {
@@ -7902,6 +7899,7 @@ static void Task_HandleSearchParameterInput(u8 taskId)
         }
         return;
     }
+
     if (JOY_REPEAT(DPAD_DOWN))
     {
         if (*cursorPos < MAX_SEARCH_PARAM_CURSOR_POS && *cursorPos < maxOption)
@@ -8155,16 +8153,26 @@ static void DrawOrEraseSearchParameterBox(bool8 erase)
 // and the currently selected search parameter description in the bottom text box
 static void PrintSearchParameterText(u8 taskId)
 {
-    const struct SearchOptionText *texts = sSearchOptions[gTasks[taskId].tMenuItem].texts;
-    const s16 *cursorPos = &gTasks[taskId].data[sSearchOptions[gTasks[taskId].tMenuItem].taskDataCursorPos];
-    const s16 *scrollOffset = &gTasks[taskId].data[sSearchOptions[gTasks[taskId].tMenuItem].taskDataScrollOffset];
+    u8 menuItem = gTasks[taskId].tMenuItem;
+    const struct SearchOptionText *texts = sSearchOptions[menuItem].texts;
+    const s16 *cursorPos = &gTasks[taskId].data[sSearchOptions[menuItem].taskDataCursorPos];
+    const s16 *scrollOffset = &gTasks[taskId].data[sSearchOptions[menuItem].taskDataScrollOffset];
+    u16 maxOption;
     u16 i;
-    u16 j;
 
+    if (menuItem != SEARCH_MODE)
+        maxOption = sSearchOptions[menuItem].numOptions - 1;
+    else if (IsNationalPokedexEnabled())
+        maxOption = sSearchOptions[menuItem].numOptions - 1;
+    else if (IsExtendedPokedexEnabled())
+        maxOption = sSearchOptions[menuItem].numOptions - 2;
+    else
+        maxOption = sSearchOptions[menuItem].numOptions - 3;
+    
     ClearSearchParameterBoxText();
 
-    for (i = 0, j = *scrollOffset; i < MAX_SEARCH_PARAM_ON_SCREEN && texts[j].title != NULL; i++, j++)
-        PrintSearchParameterTitle(i, texts[j].title);
+    for (i = 0; i < MAX_SEARCH_PARAM_ON_SCREEN && texts[i + *scrollOffset].title != NULL && i <= maxOption; i++)
+        PrintSearchParameterTitle(i, texts[i + *scrollOffset].title);
 
     EraseAndPrintSearchTextBox(texts[*cursorPos + *scrollOffset].description);
 }
