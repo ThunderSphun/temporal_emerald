@@ -100,6 +100,7 @@ enum
 {
     ORDER_NUMERICAL,
     ORDER_ALPHABETICAL,
+    ORDER_BST,
     ORDER_HEAVIEST,
     ORDER_LIGHTEST,
     ORDER_TALLEST,
@@ -121,6 +122,7 @@ enum
 };
 
 extern const u16 gPokedexOrder_Alphabetical[];
+extern const u16 gPokedexOrder_BaseStatTotal[];
 extern const u16 gPokedexOrder_Height[];
 extern const u16 gPokedexOrder_Weight[];
 
@@ -444,6 +446,7 @@ static void LoadPokedexBgPalette(bool8);
 static void FreeWindowAndBgBuffers(void);
 static void SortPokedexListNumerical(u8 dexMode);
 static void SortPokedexListAlphabetical(u8 dexMode);
+static void SortPokedexListBaseStatTotal(u8 dexMode);
 static void SortPokedexListHeaviest(u8 dexMode);
 static void SortPokedexListLightest(u8 dexMode);
 static void SortPokedexListTallest(u8 dexMode);
@@ -1556,6 +1559,7 @@ static const struct SearchOptionText sDexOrderOptions[ORDER_COUNT] =
 {
     [ORDER_NUMERICAL]    = {gText_DexSortNumericalDescription, gText_DexSortNumericalTitle},
     [ORDER_ALPHABETICAL] = {gText_DexSortAtoZDescription,      gText_DexSortAtoZTitle},
+    [ORDER_BST]          = {gText_DexSortBSTDescription,       gText_DexSortBSTTitle},
     [ORDER_HEAVIEST]     = {gText_DexSortHeaviestDescription,  gText_DexSortHeaviestTitle},
     [ORDER_LIGHTEST]     = {gText_DexSortLightestDescription,  gText_DexSortLightestTitle},
     [ORDER_TALLEST]      = {gText_DexSortTallestDescription,   gText_DexSortTallestTitle},
@@ -1566,6 +1570,7 @@ static void (*sPokemonSort[ORDER_COUNT])(u8 dexMode) =
 {
     [ORDER_NUMERICAL]       = SortPokedexListNumerical,
     [ORDER_ALPHABETICAL]    = SortPokedexListAlphabetical,
+    [ORDER_BST]             = SortPokedexListBaseStatTotal,
     [ORDER_HEAVIEST]        = SortPokedexListHeaviest,
     [ORDER_LIGHTEST]        = SortPokedexListLightest,
     [ORDER_TALLEST]         = SortPokedexListTallest,
@@ -1574,7 +1579,7 @@ static void (*sPokemonSort[ORDER_COUNT])(u8 dexMode) =
 
 static const struct SearchOptionText sDexSearchNameOptions[] =
 {
-    {gText_DexEmptyString, gText_DexSearchDontSpecify},
+                 {gText_DexEmptyString, gText_DexSearchDontSpecify},
     [NAME_ABC] = {gText_DexEmptyString, gText_DexSearchAlphaABC},
     [NAME_DEF] = {gText_DexEmptyString, gText_DexSearchAlphaDEF},
     [NAME_GHI] = {gText_DexEmptyString, gText_DexSearchAlphaGHI},
@@ -1589,7 +1594,7 @@ static const struct SearchOptionText sDexSearchNameOptions[] =
 
 static const struct SearchOptionText sDexSearchColorOptions[] =
 {
-    {gText_DexEmptyString, gText_DexSearchDontSpecify},
+                              {gText_DexEmptyString, gText_DexSearchDontSpecify},
     [BODY_COLOR_RED + 1]    = {gText_DexEmptyString, gText_DexSearchColorRed},
     [BODY_COLOR_BLUE + 1]   = {gText_DexEmptyString, gText_DexSearchColorBlue},
     [BODY_COLOR_YELLOW + 1] = {gText_DexEmptyString, gText_DexSearchColorYellow},
@@ -2281,6 +2286,37 @@ static void SortPokedexListAlphabetical(u8 dexMode)
             sPokedexView->pokedexList[sPokedexView->pokemonListCount].dexNum = alphaNum;
             sPokedexView->pokedexList[sPokedexView->pokemonListCount].seen = TRUE;
             sPokedexView->pokedexList[sPokedexView->pokemonListCount].owned = GetSetPokedexFlag(alphaNum, FLAG_GET_CAUGHT);
+            sPokedexView->pokemonListCount++;
+        }
+    }
+}
+
+static void SortPokedexListBaseStatTotal(u8 dexMode)
+{
+    u16 bstNum;
+    u16 dexNum;
+
+    for (s16 i = 0; i < NATIONAL_DEX_COUNT; i++)
+    {
+        bstNum = gPokedexOrder_BaseStatTotal[i];
+
+        dexNum = NATIONAL_DEX_NONE;
+
+        if (GetSetPokedexFlag(bstNum, FLAG_GET_CAUGHT))
+        {
+            if (dexMode == DEX_MODE_REGIONAL)
+                dexNum = NationalToRegionalOrder(bstNum);
+            else if (dexMode == DEX_MODE_EXTENDED)
+                dexNum = NationalToExtendedOrder(bstNum);
+            else if (dexMode == DEX_MODE_NATIONAL)
+                dexNum = bstNum;
+        }
+
+        if (dexNum != NATIONAL_DEX_NONE)
+        {
+            sPokedexView->pokedexList[sPokedexView->pokemonListCount].dexNum = bstNum;
+            sPokedexView->pokedexList[sPokedexView->pokemonListCount].seen = TRUE;
+            sPokedexView->pokedexList[sPokedexView->pokemonListCount].owned = TRUE;
             sPokedexView->pokemonListCount++;
         }
     }
