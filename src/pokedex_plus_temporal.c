@@ -730,6 +730,23 @@ static const struct OamData sOamData_InterfaceText =
     .affineParam = 0
 };
 
+static const struct OamData sOamData_Dex8x8 =
+{
+    .y = DISPLAY_HEIGHT,
+    .affineMode = ST_OAM_AFFINE_OFF,
+    .objMode = ST_OAM_OBJ_NORMAL,
+    .mosaic = FALSE,
+    .bpp = ST_OAM_4BPP,
+    .shape = SPRITE_SHAPE(8x8),
+    .x = 0,
+    .matrixNum = 0,
+    .size = SPRITE_SIZE(8x8),
+    .tileNum = 0,
+    .priority = 0,
+    .paletteNum = 0,
+    .affineParam = 0
+};
+
 static const struct OamData sOamData_Dex8x16 =
 {
     .y = DISPLAY_HEIGHT,
@@ -861,6 +878,12 @@ static const union AnimCmd sSpriteAnim_SeenOwnDigit9[] =
     ANIMCMD_END
 };
 
+static const union AnimCmd sSpriteAnim_SeenOwnDash[] =
+{
+    ANIMCMD_FRAME(198, 30),
+    ANIMCMD_END
+};
+
 static const union AnimCmd sSpriteAnim_DexListStartMenuCursor[] =
 {
     ANIMCMD_FRAME(4, 30),
@@ -904,6 +927,11 @@ static const union AnimCmd *const sSpriteAnimTable_SeenOwnNumber[] =
     sSpriteAnim_SeenOwnDigit7,
     sSpriteAnim_SeenOwnDigit8,
     sSpriteAnim_SeenOwnDigit9
+};
+
+static const union AnimCmd *const sSpriteAnimTable_SeenOwnDash[] =
+{
+    sSpriteAnim_SeenOwnDash
 };
 
 static const union AnimCmd *const sSpriteAnimTable_DexListStartMenuCursor[] =
@@ -968,11 +996,22 @@ static const struct SpriteTemplate sDexSeenOwnNumberSpriteTemplate =
     .callback = SpriteCB_SeenOwnInfo,
 };
 
-static const struct SpriteTemplate sDexListStartMenuCursorSpriteTemplate =
+static const struct SpriteTemplate sDexSeenOwnDashSpriteTemplate =
 {
     .tileTag = TAG_DEX_INTERFACE,
     .paletteTag = TAG_DEX_INTERFACE,
     .oam = &sOamData_Dex8x16,
+    .anims = sSpriteAnimTable_SeenOwnDash,
+    .images = NULL,
+    .affineAnims = gDummySpriteAffineAnimTable,
+    .callback = SpriteCB_SeenOwnInfo,
+};
+
+static const struct SpriteTemplate sDexListStartMenuCursorSpriteTemplate =
+{
+    .tileTag = TAG_DEX_INTERFACE,
+    .paletteTag = TAG_DEX_INTERFACE,
+    .oam = &sOamData_Dex8x8,
     .anims = sSpriteAnimTable_DexListStartMenuCursor,
     .images = NULL,
     .affineAnims = gDummySpriteAffineAnimTable,
@@ -2995,6 +3034,7 @@ static void CreateInterfaceSprites(u8 page)
         spriteId = CreateSprite(&sDexTextSpriteTemplate, 204, 22, 1);
         StartSpriteAnim(&gSprites[spriteId], 0);
         CreateInterfaceSprites1000(GetRegionalPokedexCount(FLAG_GET_SEEN), 189, 33);
+        CreateSprite(&sDexSeenOwnDashSpriteTemplate, 213, 38, 1);
         CreateInterfaceSprites1000(GetRegionalPokedexCount(FLAG_GET_CAUGHT), 215, 33);
 
         if (IsExtendedPokedexEnabled())
@@ -3002,6 +3042,7 @@ static void CreateInterfaceSprites(u8 page)
             spriteId = CreateSprite(&sDexTextSpriteTemplate, 204, 43, 1);
             StartSpriteAnim(&gSprites[spriteId], 1);
             CreateInterfaceSprites1000(GetExtendedPokedexCount(FLAG_GET_SEEN), 189, 54);
+            CreateSprite(&sDexSeenOwnDashSpriteTemplate, 213, 59, 1);
             CreateInterfaceSprites1000(GetExtendedPokedexCount(FLAG_GET_CAUGHT), 215, 54);
         }
 
@@ -3010,6 +3051,7 @@ static void CreateInterfaceSprites(u8 page)
             spriteId = CreateSprite(&sDexTextSpriteTemplate, 204, 64, 1);
             StartSpriteAnim(&gSprites[spriteId], 2);
             CreateInterfaceSprites1000(GetNationalPokedexCount(FLAG_GET_SEEN), 189, 75);
+            CreateSprite(&sDexSeenOwnDashSpriteTemplate, 213, 80, 1);
             CreateInterfaceSprites1000(GetNationalPokedexCount(FLAG_GET_CAUGHT), 215, 75);
         }
 
