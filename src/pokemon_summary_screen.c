@@ -3240,8 +3240,8 @@ static void PrintAOrBButtonIcon(u8 windowId, bool8 bButton, u32 x)
 
 static void PrintStatLabel(u8 windowId, const u8 *string, u8 x, u8 y, u8 statIndex)
 {
-    static const u8 sTextNatureDown[] = _("+");
-    static const u8 sTextNatureUp[] = _("-");
+    static const u8 sTextNatureDown[] = _("-");
+    static const u8 sTextNatureUp[] = _("+");
     static const u8 sTextNatureNeutral[] = _("  "); // a bit of a hack (space is 3 px, + and - are 6 px, so use 2 spaces)
 
     if (gNaturesInfo[sMonSummaryScreen->summary.mintNature].statUp == gNaturesInfo[sMonSummaryScreen->summary.mintNature].statDown)
