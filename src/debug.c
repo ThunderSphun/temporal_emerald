@@ -3393,6 +3393,7 @@ static void DebugAction_CreateFollowerNPC(u8 taskId)
     Debug_DestroyMenu_Full(taskId);
     LockPlayerFieldControls();
     DestroyFollowerNPC();
+    RemoveFollowingPokemon();
     SetFollowerNPCData(FNPC_DATA_BATTLE_PARTNER, PARTNER_STEVEN);
     CreateFollowerNPC(gfx, FNPC_ALL, Debug_Follower_NPC_Event_Script);
     UnlockPlayerFieldControls();
