@@ -1577,7 +1577,7 @@ static u8 CheckValidityOfTradeMons(u8 *aliveMons, u8 playerPartyCount, u8 player
     // Partner cant trade Egg or non-Hoenn mon if player doesn't have National Dex
     if (!IsNationalPokedexEnabled())
     {
-        if (sTradeMenu->isEgg[TRADE_PARTNER][partnerMonIdx] || !IsSpeciesInHoennDex(partnerSpecies))
+        if (sTradeMenu->isEgg[TRADE_PARTNER][partnerMonIdx] || !IsSpeciesInRegionalDex(partnerSpecies))
             return PARTNER_MON_INVALID;
     }
 
@@ -2398,7 +2398,7 @@ static u32 CanTradeSelectedMon(struct Pokemon *playerParty, int partyCount, int 
         if (species2[monIdx] == SPECIES_EGG)
             return CANT_TRADE_EGG_YET;
 
-        if (!IsSpeciesInHoennDex(species2[monIdx]))
+        if (!IsSpeciesInRegionalDex(species2[monIdx]))
             return CANT_TRADE_NATIONAL;
     }
 
@@ -2412,7 +2412,7 @@ static u32 CanTradeSelectedMon(struct Pokemon *playerParty, int partyCount, int 
             if (species2[monIdx] == SPECIES_EGG)
                 return CANT_TRADE_PARTNER_EGG_YET;
 
-            if (!IsSpeciesInHoennDex(species2[monIdx]))
+            if (!IsSpeciesInRegionalDex(species2[monIdx]))
                 return CANT_TRADE_INVALID_MON;
         }
     }
@@ -2513,8 +2513,8 @@ int GetUnionRoomTradeMessageId(struct RfuGameCompatibilityData player, struct Rf
     else
     {
         // Player's Pokémon must be of the type the partner requested
-        if (gSpeciesInfo[playerSpecies2].types[0] != requestedType
-         && gSpeciesInfo[playerSpecies2].types[1] != requestedType)
+        if (GetSpeciesType(playerSpecies2, 0) != requestedType
+         && GetSpeciesType(playerSpecies2, 1) != requestedType)
             return UR_TRADE_MSG_NOT_MON_PARTNER_WANTS;
     }
 
@@ -2529,15 +2529,15 @@ int GetUnionRoomTradeMessageId(struct RfuGameCompatibilityData player, struct Rf
         if (playerSpecies2 == SPECIES_EGG)
             return UR_TRADE_MSG_EGG_CANT_BE_TRADED;
 
-        if (!IsSpeciesInHoennDex(playerSpecies2))
+        if (!IsSpeciesInRegionalDex(playerSpecies2))
             return UR_TRADE_MSG_MON_CANT_BE_TRADED_NOW;
 
-        if (!IsSpeciesInHoennDex(partnerSpecies))
+        if (!IsSpeciesInRegionalDex(partnerSpecies))
             return UR_TRADE_MSG_PARTNERS_MON_CANT_BE_TRADED;
     }
 
     // If the partner doesn't have the National Dex then the player's offer has to be a Hoenn Pokémon
-    if (!partnerHasNationalDex && !IsSpeciesInHoennDex(playerSpecies2))
+    if (!partnerHasNationalDex && !IsSpeciesInRegionalDex(playerSpecies2))
         return UR_TRADE_MSG_PARTNER_CANT_ACCEPT_MON;
 
     // Trade is allowed
@@ -2559,7 +2559,7 @@ int CanRegisterMonForTradingBoard(struct RfuGameCompatibilityData player, u16 sp
     if (species2 == SPECIES_EGG)
         return CANT_REGISTER_EGG;
 
-    if (IsSpeciesInHoennDex(species2))
+    if (IsSpeciesInRegionalDex(species2))
         return CAN_REGISTER_MON;
 
     return CANT_REGISTER_MON_NOW;
@@ -2609,7 +2609,7 @@ int CanSpinTradeMon(struct Pokemon *mon, u16 monIdx)
 
     if (canTradeAnyMon == FALSE)
     {
-        if (!IsSpeciesInHoennDex(speciesArray[monIdx]))
+        if (!IsSpeciesInRegionalDex(speciesArray[monIdx]))
             return CANT_TRADE_NATIONAL;
 
         if (speciesArray[monIdx] == SPECIES_NONE)
@@ -3057,9 +3057,9 @@ static void UpdatePokedexForReceivedMon(u8 partyIdx)
     {
         u16 species = GetMonData(mon, MON_DATA_SPECIES, NULL);
         u32 personality = GetMonData(mon, MON_DATA_PERSONALITY, NULL);
-        species = SpeciesToNationalPokedexNum(species);
-        GetSetPokedexFlag(species, FLAG_SET_SEEN);
-        HandleSetPokedexFlag(species, FLAG_SET_CAUGHT, personality);
+        enum NationalDexOrder dexNum = SpeciesToNationalPokedexNum(species);
+        GetSetPokedexFlag(dexNum, FLAG_SET_SEEN);
+        HandleSetPokedexFlag(dexNum, FLAG_SET_CAUGHT, personality);
     }
 }
 
@@ -3189,7 +3189,7 @@ static void SetTradeSequenceBgGpuRegs(u8 state)
                                           DISPCNT_OBJ_1D_MAP |
                                           DISPCNT_BG1_ON |
                                           DISPCNT_OBJ_ON);
-            LZ77UnCompVram(sWirelessCloseup_Map, (void *) BG_SCREEN_ADDR(5));
+            DecompressDataWithHeaderVram(sWirelessCloseup_Map, (void *) BG_SCREEN_ADDR(5));
             BlendPalettes(0x8, 16, RGB_BLACK);
         }
         else
@@ -3204,8 +3204,8 @@ static void SetTradeSequenceBgGpuRegs(u8 state)
         break;
     case 3:
         LoadPalette(sWirelessSignalNone_Pal, BG_PLTT_ID(3), PLTT_SIZE_4BPP);
-        LZ77UnCompVram(sWirelessSignal_Gfx, (void *) BG_CHAR_ADDR(1));
-        LZ77UnCompVram(sWirelessSignal_Tilemap, (void *) BG_SCREEN_ADDR(18));
+        DecompressDataWithHeaderVram(sWirelessSignal_Gfx, (void *) BG_CHAR_ADDR(1));
+        DecompressDataWithHeaderVram(sWirelessSignal_Tilemap, (void *) BG_SCREEN_ADDR(18));
         sTradeAnim->bg2vofs = 80;
         SetGpuReg(REG_OFFSET_DISPCNT, DISPCNT_MODE_0 |
                                       DISPCNT_OBJ_1D_MAP |

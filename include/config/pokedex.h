@@ -9,6 +9,7 @@
 #define DEX_DECAPPED                       TRUE  // If TRUE, uses decapped gfx and strings.
 #define DEX_DARK_MODE                      TRUE  // If TRUE, enables dark mode.
 #define DEX_HIDE_UNSEEN_EVOLUTION_NAMES    TRUE  // If TRUE, hides evolution mon names.
+#define DEX_HIDE_UNOWNED_EVOLUTION_METHODS TRUE  // If TRUE, hides evolution methods.
 #define DEX_SORT_TMS_BY_NUM                FALSE // If TRUE, sorts the TMS in HGSS Dex by TM number, rather than alphabetically.
 #define DEX_SHOW_EGG_MOVES_FOR_EVOS        FALSE // If TRUE, shows Egg Moves for evolved Pokémon too.
 

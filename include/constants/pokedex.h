@@ -3,7 +3,8 @@
 
 // National Pokédex order
 // These constants are NOT disabled by P_GEN_X_POKEMON to keep pokedex_orders.h clean.
-enum {
+enum NationalDexOrder
+{
     NATIONAL_DEX_NONE,
 
     // Kanto
@@ -1053,7 +1054,7 @@ enum {
 };
 
 // extended dex
-enum {
+enum ExtendedDexOrder {
     EXTENDED_DEX_NONE,
 
     // Kanto
@@ -1692,7 +1693,7 @@ enum {
 };
 
 // Regional Pokédex order
-enum {
+enum RegionalDexOrder {
     REGIONAL_DEX_NONE,
 
     REGIONAL_DEX_TREECKO,
