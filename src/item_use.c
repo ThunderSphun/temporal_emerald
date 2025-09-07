@@ -273,12 +273,19 @@ void ItemUseOutOfBattle_ExpShare(u8 taskId)
 void ItemUseOutOfBattle_Bike(u8 taskId)
 {
     s16 *data = gTasks[taskId].data;
+
     s16 coordsY;
     s16 coordsX;
-    u8 behavior;
     PlayerGetDestCoords(&coordsX, &coordsY);
-    behavior = MapGridGetMetatileBehaviorAt(coordsX, coordsY);
-    if (FlagGet(FLAG_SYS_CYCLING_ROAD) == TRUE || MetatileBehavior_IsVerticalRail(behavior) == TRUE || MetatileBehavior_IsHorizontalRail(behavior) == TRUE || MetatileBehavior_IsIsolatedVerticalRail(behavior) == TRUE || MetatileBehavior_IsIsolatedHorizontalRail(behavior) == TRUE)
+
+    u8 behavior = MapGridGetMetatileBehaviorAt(coordsX, coordsY);
+    if (
+        FlagGet(FLAG_SYS_CYCLING_ROAD) ||
+        MetatileBehavior_IsVerticalRail(behavior) ||
+        MetatileBehavior_IsHorizontalRail(behavior) ||
+        MetatileBehavior_IsIsolatedVerticalRail(behavior) ||
+        MetatileBehavior_IsIsolatedHorizontalRail(behavior)
+    )
     {
         DisplayCannotDismountBikeMessage(taskId, tUsingRegisteredKeyItem);
     }
