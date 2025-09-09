@@ -279,13 +279,16 @@ void ItemUseOutOfBattle_Bike(u8 taskId)
     PlayerGetDestCoords(&coordsX, &coordsY);
 
     u8 behavior = MapGridGetMetatileBehaviorAt(coordsX, coordsY);
-    if (
+    if ((
+            (gPlayerAvatar.flags & PLAYER_AVATAR_FLAG_MACH_BIKE && GetItemSecondaryId(gSpecialVar_ItemId) == MACH_BIKE) ||
+            (gPlayerAvatar.flags & PLAYER_AVATAR_FLAG_ACRO_BIKE && GetItemSecondaryId(gSpecialVar_ItemId) == ACRO_BIKE)
+        ) && (
         FlagGet(FLAG_SYS_CYCLING_ROAD) ||
         MetatileBehavior_IsVerticalRail(behavior) ||
         MetatileBehavior_IsHorizontalRail(behavior) ||
         MetatileBehavior_IsIsolatedVerticalRail(behavior) ||
         MetatileBehavior_IsIsolatedHorizontalRail(behavior)
-    )
+    ))
     {
         DisplayCannotDismountBikeMessage(taskId, tUsingRegisteredKeyItem);
     }
