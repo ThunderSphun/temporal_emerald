@@ -45,4 +45,8 @@
 #define I_FISHING_CHAIN                 FALSE             // Introduced in XY, hooking the same Pokémon repeatedly will increase the odds of that mon being shiny. NOTE: This implementation is an approximation of the actual feature, as XY have not been throughoutly documented or datamined.
 #define I_FISHING_PROXIMITY             FALSE             // Introduced in XY, fishing away from other people in enclosed areas will increase the chances of a Pokémon being hooked. NOTE: This implementation is an approximation of the actual feature, as XY have not been throughoutly documented or datamined.
 
+#define ITEM_MENU_NONE                  0
+#define ITEM_MENU_TEMPORAL              1
+#define ITEM_MENU_VERSION               ITEM_MENU_TEMPORAL
+
 #endif // GUARD_CONFIG_ITEM_H
