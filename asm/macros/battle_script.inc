@@ -1050,7 +1050,7 @@
 	.4byte \failInstr
 	.endm
 
-	.macro trydobeatup endInstr, failInstr
+	.macro trydobeatup endInstr:req, failInstr:req
 	.byte 0xc4
 	.4byte \endInstr
 	.4byte \failInstr
@@ -2102,9 +2102,8 @@
 	.byte \id
 	.endm
 
-	.macro arenawaitmessage id:req
+	.macro arenawaitmessage
 	callnative BS_ArenaWaitMessage
-	.byte \id
 	.endm
 
 	.macro waitcry
