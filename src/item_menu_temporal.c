@@ -19,6 +19,7 @@
 #include "international_string_util.h"
 #include "item.h"
 #include "item_menu_icons.h"
+#include "item_menu_temporal_icons.h"
 #include "item_use.h"
 #include "lilycove_lady.h"
 #include "list_menu.h"
@@ -102,7 +103,7 @@ enum {
     WIN_POCKET_NAME,
     WIN_TMHM_INFO_ICONS,
     WIN_TMHM_INFO,
-    WIN_MESSAGE, // Identical to ITEMWIN_MESSAGE. Unused?
+    WIN_ITEM_NAME,
 };
 
 // Item list ID for toSwapPos to indicate an item is not currently being swapped
@@ -144,6 +145,7 @@ static void Task_WallyTutorialBagMenu(u8);
 static void Task_BagMenu_HandleInput(u8);
 static void GetItemNameFromPocket(u8 *, u16);
 static void PrintItemDescription(int);
+static void PrintItemName(int);
 static void BagMenu_PrintCursorAtPos(u8, u8);
 static void BagMenu_Print(u8, u8, const u8 *, u8, u8, u8, u8, u8, u8);
 static void Task_CloseBagMenu(u8);
@@ -434,7 +436,7 @@ static const struct WindowTemplate sDefaultBagWindows[] =
         .width = 19,
         .height = 12,
         .paletteNum = 1,
-        .baseBlock = 0x27,
+        .baseBlock = 0x0001,
     },
     [WIN_DESCRIPTION] = {
         .bg = 0,
@@ -443,7 +445,7 @@ static const struct WindowTemplate sDefaultBagWindows[] =
         .width = 8,
         .height = 11,
         .paletteNum = 1,
-        .baseBlock = 0x10B,
+        .baseBlock = 0x00E5,
     },
     [WIN_POCKET_NAME] = {
         .bg = 0,
@@ -452,7 +454,7 @@ static const struct WindowTemplate sDefaultBagWindows[] =
         .width = 22,
         .height = 2,
         .paletteNum = 1,
-        .baseBlock = 0x163,
+        .baseBlock = 0x013D,
     },
     [WIN_TMHM_INFO_ICONS] = {
         .bg = 0,
@@ -461,7 +463,7 @@ static const struct WindowTemplate sDefaultBagWindows[] =
         .width = 5,
         .height = 6,
         .paletteNum = 12,
-        .baseBlock = 0x18F,
+        .baseBlock = 0x0169,
     },
     [WIN_TMHM_INFO] = {
         .bg = 0,
@@ -470,16 +472,16 @@ static const struct WindowTemplate sDefaultBagWindows[] =
         .width = 4,
         .height = 6,
         .paletteNum = 12,
-        .baseBlock = 0x1A7,
+        .baseBlock = 0x0187,
     },
-    [WIN_MESSAGE] = {
+    [WIN_ITEM_NAME] = {
         .bg = 1,
         .tilemapLeft = 2,
-        .tilemapTop = 15,
-        .width = 27,
-        .height = 4,
-        .paletteNum = 15,
-        .baseBlock = 0x1BF,
+        .tilemapTop = 5,
+        .width = 7,
+        .height = 2,
+        .paletteNum = 1,
+        .baseBlock = 0x019F,
     },
     DUMMY_WIN_TEMPLATE,
 };
@@ -822,7 +824,17 @@ static void LoadBagItemListBuffers(u8 pocketId)
     u16 i;
     struct ListMenuItem *subBuffer;
 
-    if (!gBagMenu->hideCloseBagText)
+    if (gBagMenu->hideCloseBagText)
+    {
+        for (i = 0; i < gBagMenu->numItemStacks[pocketId]; i++)
+        {
+            GetItemNameFromPocket(sListBuffer2->name[i], GetBagItemId(pocketId, i));
+            subBuffer = sListBuffer1->subBuffers;
+            subBuffer[i].name = sListBuffer2->name[i];
+            subBuffer[i].id = i;
+        }
+    }
+    else
     {
         for (i = 0; i < gBagMenu->numItemStacks[pocketId] - 1; i++)
         {
@@ -835,16 +847,6 @@ static void LoadBagItemListBuffers(u8 pocketId)
         subBuffer = sListBuffer1->subBuffers;
         subBuffer[i].name = sListBuffer2->name[i];
         subBuffer[i].id = LIST_CANCEL;
-    }
-    else
-    {
-        for (i = 0; i < gBagMenu->numItemStacks[pocketId]; i++)
-        {
-            GetItemNameFromPocket(sListBuffer2->name[i], GetBagItemId(pocketId, i));
-            subBuffer = sListBuffer1->subBuffers;
-            subBuffer[i].name = sListBuffer2->name[i];
-            subBuffer[i].id = i;
-        }
     }
     gMultiuseListMenuTemplate = sItemListMenu;
     gMultiuseListMenuTemplate.totalItems = gBagMenu->numItemStacks[pocketId];
@@ -888,19 +890,16 @@ static void GetItemNameFromPocket(u8 *dest, u16 itemId)
 
 static void BagMenu_MoveCursorCallback(s32 itemIndex, bool8 onInit, struct ListMenu *list)
 {
-    if (onInit != TRUE)
+    if (!onInit)
         PlaySE(SE_SELECT);
 
     if (gBagMenu->toSwapPos == NOT_SWAPPING)
     {
-        RemoveBagItemIconSprite(gBagMenu->itemIconSlot ^ 1);
-        if (itemIndex != LIST_CANCEL)
-           AddBagItemIconSprite(GetBagItemId(gBagPosition.pocket, itemIndex), gBagMenu->itemIconSlot);
-        else
-           AddBagItemIconSprite(ITEM_LIST_END, gBagMenu->itemIconSlot);
+        AddBagItemIconSpriteXY(GetBagItemId(gBagPosition.pocket, itemIndex), gBagMenu->itemIconSlot, 96, 64);
         gBagMenu->itemIconSlot ^= 1;
         if (!gBagMenu->inhibitItemDescriptionPrint)
             PrintItemDescription(itemIndex);
+        PrintItemName(itemIndex);
     }
 }
 
@@ -958,6 +957,18 @@ static void PrintItemDescription(int itemIndex)
     }
     FillWindowPixelBuffer(WIN_DESCRIPTION, PIXEL_FILL(0));
     BagMenu_Print(WIN_DESCRIPTION, FONT_NORMAL, str, 3, 1, 0, 0, 0, COLORID_NORMAL);
+}
+
+static void PrintItemName(int itemIndex)
+{
+    const u8 *str;
+    if (itemIndex == LIST_CANCEL)
+        str = gText_CloseBag;
+    else
+        str = GetItemName(GetBagItemId(gBagPosition.pocket, itemIndex));
+    
+    FillWindowPixelBuffer(WIN_ITEM_NAME, PIXEL_FILL(0));
+    BagMenu_Print(WIN_ITEM_NAME, FONT_NARROW, str, 0, 0, 0, 0, 0, COLORID_NORMAL);
 }
 
 static void BagMenu_PrintCursor(u8 listTaskId, u8 colorIndex)
@@ -1198,16 +1209,14 @@ static void ReturnToItemList(u8 taskId)
 
 static u8 GetSwitchBagPocketDirection(void)
 {
-    u8 LRKeys;
     if (gBagMenu->pocketSwitchDisabled)
         return SWITCH_POCKET_NONE;
-    LRKeys = GetLRKeysPressed();
-    if (JOY_NEW(DPAD_LEFT) || LRKeys == MENU_L_PRESSED)
+    if (JOY_NEW(L_BUTTON))
     {
         PlaySE(SE_SELECT);
         return SWITCH_POCKET_LEFT;
     }
-    if (JOY_NEW(DPAD_RIGHT) || LRKeys == MENU_R_PRESSED)
+    if (JOY_NEW(R_BUTTON))
     {
         PlaySE(SE_SELECT);
         return SWITCH_POCKET_RIGHT;
@@ -1235,8 +1244,8 @@ static void SwitchBagPocket(u8 taskId, s16 deltaBagPocketId, bool16 skipEraseLis
     tPocketSwitchDir = deltaBagPocketId;
     if (!skipEraseList)
     {
-        ClearWindowTilemap(WIN_ITEM_LIST);
         ClearWindowTilemap(WIN_DESCRIPTION);
+        ClearWindowTilemap(WIN_ITEM_NAME);
         DestroyListMenuTask(tListTaskId, &gBagPosition.scrollPosition[gBagPosition.pocket], &gBagPosition.cursorPosition[gBagPosition.pocket]);
         ScheduleBgCopyTilemapToVram(0);
         gSprites[gBagMenu->spriteIds[ITEMMENUSPRITE_ITEM + (gBagMenu->itemIconSlot ^ 1)]].invisible = TRUE;
@@ -1252,11 +1261,10 @@ static void SwitchBagPocket(u8 taskId, s16 deltaBagPocketId, bool16 skipEraseLis
     else
     {
         PrintPocketNames(gPocketNamesStringsTable[newPocket], gPocketNamesStringsTable[gBagPosition.pocket]);
-        CopyPocketNameToWindow(8);
+        CopyPocketNameToWindow(sDefaultBagWindows[WIN_POCKET_NAME].width);
     }
     DrawPocketIndicator(gBagPosition.pocket, FALSE);
     DrawPocketIndicator(newPocket, TRUE);
-    SetBagVisualPocketId(newPocket, TRUE);
     AddSwitchPocketRotatingBallSprite(deltaBagPocketId);
     SetTaskFuncWithFollowupFunc(taskId, Task_SwitchBagPocket, gTasks[taskId].func);
 }
@@ -1291,7 +1299,7 @@ static void Task_SwitchBagPocket(u8 taskId)
             if (tPocketSwitchDir == MENU_CURSOR_DELTA_RIGHT)
                 CopyPocketNameToWindow((u8)(tPocketSwitchTimer >> 1));
             else
-                CopyPocketNameToWindow((u8)(8 - (tPocketSwitchTimer >> 1)));
+                CopyPocketNameToWindow((u8)(sDefaultBagWindows[WIN_POCKET_NAME].width - (tPocketSwitchTimer >> 1)));
         }
         if (tPocketSwitchTimer == sDefaultBagWindows[WIN_ITEM_LIST].height)
             tPocketSwitchState++;
@@ -1302,6 +1310,7 @@ static void Task_SwitchBagPocket(u8 taskId)
         tListTaskId = ListMenuInit(&gMultiuseListMenuTemplate, gBagPosition.scrollPosition[gBagPosition.pocket], gBagPosition.cursorPosition[gBagPosition.pocket]);
         PutWindowTilemap(WIN_DESCRIPTION);
         PutWindowTilemap(WIN_POCKET_NAME);
+        PutWindowTilemap(WIN_ITEM_NAME);
         ScheduleBgCopyTilemapToVram(0);
         CreatePocketScrollArrowPair();
         CreatePocketSwitchArrowPair();
@@ -2334,14 +2343,15 @@ static void CopyPocketNameToWindow(u32 a)
 {
     u8 (*tileDataBuffer)[32][32];
     u8 *windowTileData;
-    int b;
-    if (a > 8)
-        a = 8;
+
+    if (a > sDefaultBagWindows[WIN_POCKET_NAME].width)
+        a = sDefaultBagWindows[WIN_POCKET_NAME].width;
+    
     tileDataBuffer = &gBagMenu->pocketNameBuffer;
-    windowTileData = (u8 *)GetWindowAttribute(2, WINDOW_TILE_DATA);
+    windowTileData = (u8 *)GetWindowAttribute(WIN_POCKET_NAME, WINDOW_TILE_DATA);
     CpuCopy32(&tileDataBuffer[0][a], windowTileData, 0x100); // Top half of pocket name
-    b = a + 16;
-    CpuCopy32(&tileDataBuffer[0][b], windowTileData + 0x100, 0x100); // Bottom half of pocket name
+    a += sDefaultBagWindows[WIN_POCKET_NAME].width * 2;
+    CpuCopy32(&tileDataBuffer[0][a], windowTileData + 0x100, 0x100); // Bottom half of pocket name
     CopyWindowToVram(WIN_POCKET_NAME, COPYWIN_GFX);
 }
 
@@ -2360,6 +2370,8 @@ static void LoadBagMenuTextWindows(void)
         FillWindowPixelBuffer(i, PIXEL_FILL(0));
         PutWindowTilemap(i);
     }
+    FillWindowPixelBuffer(WIN_ITEM_NAME, PIXEL_FILL(0));
+    PutWindowTilemap(WIN_ITEM_NAME);
     ScheduleBgCopyTilemapToVram(0);
     ScheduleBgCopyTilemapToVram(1);
 }
